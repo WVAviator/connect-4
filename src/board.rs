@@ -9,13 +9,13 @@ use std::fmt;
 
 use crate::constants::{BOARD_MASK, EMPTY_BOARD, FILE, GAME_MASK, ROW};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct Board {
     red: u64,
     yellow: u64,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Color {
     Red,
     Yellow,
@@ -141,6 +141,15 @@ impl fmt::Display for Board {
             }
         }
         Ok(())
+    }
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Color::Red => write!(f, "{}", "R".red()),
+            Color::Yellow => write!(f, "{}", "Y".yellow()),
+        }
     }
 }
 

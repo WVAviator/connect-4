@@ -1,4 +1,6 @@
+use connect_4::repl::Repl;
 
 fn main() {
-    println!("Hello, world!");
+    let repl = Repl::new();
+    repl.start();
 }
