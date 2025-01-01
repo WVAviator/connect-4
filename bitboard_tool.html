@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>64-Bit Integer Grid</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            border: 1px solid #ccc;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 30px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .grid-row {
+            display: contents;
+        }
+        .grid-row:nth-child(7) input[type="checkbox"] {
+            background-color: #e0e0e0;
+        }
+        .grid input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .controls input[type="text"], .output input[type="text"] {
+            width: 200px;
+            padding: 5px;
+        }
+        .controls button {
+            padding: 5px 10px;
+        }
+        .output {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid" id="bitGrid"></div>
+        <div class="controls">
+            <input type="text" id="bitValue" value="558551906910208" />
+            <button id="updateGrid">Update Grid</button>
+            <button id="clearGrid">Clear</button>
+        </div>
+        <div class="output">
+            <input type="text" id="hexOutput" value="0x0000000000000000" />
+        </div>
+    </div>
+
+    <script>
+        const bitGrid = document.getElementById("bitGrid");
+        const bitValueInput = document.getElementById("bitValue");
+        const updateGridButton = document.getElementById("updateGrid");
+        const clearGridButton = document.getElementById("clearGrid");
+        const hexOutput = document.getElementById("hexOutput");
+
+        const DEFAULT_VALUE = 558551906910208n; // Default value with only the bottom row set
+
+        // Generate the grid of checkboxes
+        function createGrid() {
+            for (let i = 0; i < 49; i++) {
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.dataset.index = i;
+                checkbox.addEventListener("change", updateNumber);
+
+                const row = Math.floor(i / 7) + 1;
+                const rowContainer = bitGrid.querySelector(`.grid-row:nth-child(${row})`) || createRow(row);
+                rowContainer.appendChild(checkbox);
+            }
+        }
+
+        function createRow(rowIndex) {
+            const row = document.createElement("div");
+            row.classList.add("grid-row");
+            if (rowIndex === 7) {
+                row.style.backgroundColor = "#e0e0e0";
+            }
+            bitGrid.appendChild(row);
+            return row;
+        }
+
+        // Update the integer value when a checkbox is toggled
+        function updateNumber() {
+            let value = 0n;
+            bitGrid.querySelectorAll("input[type=checkbox]").forEach((checkbox, index) => {
+                if (checkbox.checked) {
+                    value |= 1n << BigInt(index);
+                }
+            });
+            bitValueInput.value = value.toString();
+            updateOutputs(value);
+        }
+
+        // Update the grid checkboxes based on the integer value
+        function updateGrid() {
+            let value;
+            try {
+                value = BigInt(bitValueInput.value);
+            } catch {
+                alert("Please enter a valid integer value.");
+                return;
+            }
+
+            bitGrid.querySelectorAll("input[type=checkbox]").forEach((checkbox, index) => {
+                checkbox.checked = (value & (1n << BigInt(index))) !== 0n;
+            });
+            updateOutputs(value);
+        }
+
+        // Reset the grid and textboxes to default values
+        function clearGrid() {
+            bitValueInput.value = DEFAULT_VALUE.toString();
+            updateGrid();
+        }
+
+        // Update hex representation
+        function updateOutputs(value) {
+            hexOutput.value = `0x${value.toString(16).toUpperCase().padStart(16, "0")}`;
+        }
+
+        createGrid();
+        updateGridButton.addEventListener("click", updateGrid);
+        clearGridButton.addEventListener("click", clearGrid);
+        clearGrid();
+    </script>
+</body>
+</html>
+
