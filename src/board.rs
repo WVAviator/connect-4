@@ -4,6 +4,7 @@
 // The first row is filled with arbitrary pieces to facilitate finding the lsb of the bottom row.
 
 use anyhow::{anyhow, bail};
+use arrayvec::ArrayVec;
 use colored::Colorize;
 use std::fmt;
 
@@ -15,10 +16,11 @@ pub struct Board {
     yellow: u64,
 }
 
+#[repr(u8)]
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Color {
-    Red,
-    Yellow,
+    Red = 0,
+    Yellow = 1,
 }
 
 impl Board {
@@ -85,15 +87,17 @@ impl Board {
 
     pub fn insert(&mut self, file: usize, color: Color) {
         let file = FILE[file] & self.all();
-        let lsb = file & (!file + 1);
-        let cell = (lsb >> 7) & BOARD_MASK;
+        let cell = (file >> 7) & !self.all();
 
-        match color {
-            Color::Red => {
-                self.red |= cell;
-            }
-            Color::Yellow => self.yellow |= cell,
-        }
+        self.red |= cell * ((color as u64) ^ 1);
+        self.yellow |= cell * (color as u64);
+    }
+
+    pub fn remove(&mut self, file: usize) {
+        let file = FILE[file] & self.all() & GAME_MASK;
+        let lsb = file & (!file + 1);
+        self.red &= !lsb;
+        self.yellow &= !lsb;
     }
 
     pub fn has_connect_4(&self, color: Color) -> bool {
@@ -114,6 +118,27 @@ impl Board {
         }
 
         horizontal_check | vertical_check | diagonal_check | antidiagonal_check != 0
+    }
+
+    pub fn legal_files(&self) -> ArrayVec<usize, 7> {
+        let mut legal_files = ArrayVec::new();
+        let mut top_row = self.empty() & ROW[5];
+        while top_row != 0 {
+            let lsb = top_row & (!top_row + 1);
+            legal_files.push(lsb.trailing_zeros() as usize);
+            top_row &= top_row - 1;
+        }
+
+        legal_files
+    }
+}
+
+impl Color {
+    pub fn other(&self) -> Self {
+        match self {
+            Color::Red => Color::Yellow,
+            Color::Yellow => Color::Red,
+        }
     }
 }
 
@@ -265,7 +290,7 @@ mod test {
         assert!(board.has_connect_4(Color::Red));
         assert!(!board.has_connect_4(Color::Yellow));
     }
-    
+
     #[test]
     fn finds_antidiagonal_connect_4_edge() {
         let board = Board::from_notation("7/3yr2/4yr1/5yr/6y/7").unwrap();
@@ -275,5 +300,4 @@ mod test {
         assert!(board.has_connect_4(Color::Yellow));
         assert!(!board.has_connect_4(Color::Red));
     }
-
 }

@@ -19,8 +19,10 @@ pub const ROW: [u64; 6] = [
 
 pub const EMPTY_BOARD: u64 = 0x0001FC0000000000;
 
+/// Includes the row beneath the gameboard used for early shifts
 pub const BOARD_MASK: u64 = 0x0001FFFFFFFFFFFF;
 
+/// Excludes the row beneath the gameboard
 pub const GAME_MASK: u64 = 0x000003FFFFFFFFFF;
 
 // pub const CONNECT4_MASKS: [];
