@@ -61,14 +61,7 @@ impl PartialOrd for Eval {
 
 fn minimax(board: &mut Board, color: Color, depth: usize, alpha: i32, beta: i32) -> i32 {
     if depth == 0 {
-        if board.has_connect_4(color.other()) {
-            return match color {
-                Color::Red => -100,
-                Color::Yellow => 100,
-            };
-        } else {
-            return 0;
-        }
+        return board.evaluate();
     }
 
     let mut alpha = alpha;

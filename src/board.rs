@@ -100,6 +100,89 @@ impl Board {
         self.yellow &= !lsb;
     }
 
+    pub fn evaluate(&self) -> i32 {
+        let mut score: i32 = 0;
+
+        let red_pieces = self.red & GAME_MASK;
+        let yellow_pieces = self.yellow & GAME_MASK;
+        let empty = self.empty();
+
+        // This starts with all the red pieces, and then performs all subsequent scanning with
+        // empty cells - indicating the "potential" for a connect-4. The result is ANDed with the
+        // original piece positions to count every piece that is potentially part of a connect-4.
+        // Ideally this should not score piece placements that can never acheive a connect-4.
+
+        let mut horizontal_check = red_pieces;
+        let mut vertical_check = red_pieces;
+        let mut diagonal_check = red_pieces;
+        let mut antidiagonal_check = red_pieces;
+        for _ in 0..3 {
+            horizontal_check = ((horizontal_check & !FILE[0]) >> 1) & (red_pieces | empty);
+            vertical_check = ((vertical_check & !ROW[5]) >> 7) & (red_pieces | empty);
+            diagonal_check = ((diagonal_check & !ROW[5] & !FILE[6]) >> 6) & (red_pieces | empty);
+            antidiagonal_check =
+                ((antidiagonal_check & !ROW[5] & !FILE[0]) >> 8) & (red_pieces | empty);
+        }
+
+        score += (horizontal_check & red_pieces).count_ones() as i32;
+        score += (vertical_check & red_pieces).count_ones() as i32;
+        score += (diagonal_check & red_pieces).count_ones() as i32;
+        score += (antidiagonal_check & red_pieces).count_ones() as i32;
+
+        let mut horizontal_check = yellow_pieces;
+        let mut vertical_check = yellow_pieces;
+        let mut diagonal_check = yellow_pieces;
+        let mut antidiagonal_check = yellow_pieces;
+        for _ in 0..3 {
+            horizontal_check = ((horizontal_check & !FILE[0]) >> 1) & (yellow_pieces | empty);
+            vertical_check = ((vertical_check & !ROW[5]) >> 7) & (yellow_pieces | empty);
+            diagonal_check = ((diagonal_check & !ROW[5] & !FILE[6]) >> 6) & (yellow_pieces | empty);
+            antidiagonal_check =
+                ((antidiagonal_check & !ROW[5] & !FILE[0]) >> 8) & (yellow_pieces | empty);
+        }
+
+        score -= (horizontal_check & yellow_pieces).count_ones() as i32;
+        score -= (vertical_check & yellow_pieces).count_ones() as i32;
+        score -= (diagonal_check & yellow_pieces).count_ones() as i32;
+        score -= (antidiagonal_check & yellow_pieces).count_ones() as i32;
+
+        // Separate scoring for actual connect-4
+
+        let mut horizontal_check = red_pieces;
+        let mut vertical_check = red_pieces;
+        let mut diagonal_check = red_pieces;
+        let mut antidiagonal_check = red_pieces;
+        for _ in 0..3 {
+            horizontal_check = ((horizontal_check & !FILE[0]) >> 1) & red_pieces;
+            vertical_check = ((vertical_check & !ROW[5]) >> 7) & red_pieces;
+            diagonal_check = ((diagonal_check & !ROW[5] & !FILE[6]) >> 6) & red_pieces;
+            antidiagonal_check = ((antidiagonal_check & !ROW[5] & !FILE[0]) >> 8) & red_pieces;
+        }
+
+        score += (horizontal_check & red_pieces).count_ones() as i32 * 42;
+        score += (vertical_check & red_pieces).count_ones() as i32 * 42;
+        score += (diagonal_check & red_pieces).count_ones() as i32 * 42;
+        score += (antidiagonal_check & red_pieces).count_ones() as i32 * 42;
+
+        let mut horizontal_check = yellow_pieces;
+        let mut vertical_check = yellow_pieces;
+        let mut diagonal_check = yellow_pieces;
+        let mut antidiagonal_check = yellow_pieces;
+        for _ in 0..3 {
+            horizontal_check = ((horizontal_check & !FILE[0]) >> 1) & yellow_pieces;
+            vertical_check = ((vertical_check & !ROW[5]) >> 7) & yellow_pieces;
+            diagonal_check = ((diagonal_check & !ROW[5] & !FILE[6]) >> 6) & yellow_pieces;
+            antidiagonal_check = ((antidiagonal_check & !ROW[5] & !FILE[0]) >> 8) & yellow_pieces;
+        }
+
+        score -= (horizontal_check & yellow_pieces).count_ones() as i32 * 42;
+        score -= (vertical_check & yellow_pieces).count_ones() as i32 * 42;
+        score -= (diagonal_check & yellow_pieces).count_ones() as i32 * 42;
+        score -= (antidiagonal_check & yellow_pieces).count_ones() as i32 * 42;
+
+        score
+    }
+
     pub fn has_connect_4(&self, color: Color) -> bool {
         let pieces = match color {
             Color::Yellow => self.yellow,

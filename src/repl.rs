@@ -70,7 +70,7 @@ impl Repl {
                 }
                 false => {
                     println!("Computer is thinking...");
-                    let minimax = Minimax::new(&self.board, self.player.other(), 10);
+                    let minimax = Minimax::new(&self.board, self.player.other(), 12);
                     let file = minimax.best_move();
                     self.insert_file(file);
                 }
