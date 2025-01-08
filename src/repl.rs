@@ -57,11 +57,11 @@ impl Repl {
                         "quit" | "q" => break,
                         file => {
                             if let Ok(file) = file.trim_ascii().parse::<usize>() {
-                                if !(0..7).contains(&file) {
-                                    println!("Bad file. Please enter 0-6.");
+                                if !(1..=7).contains(&file) {
+                                    println!("Bad file. Please enter 1-7.");
                                     continue;
                                 }
-                                self.insert_file(file);
+                                self.insert_file(file - 1);
                             } else {
                                 println!("Unknown input.");
                             }

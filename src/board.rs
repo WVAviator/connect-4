@@ -233,6 +233,7 @@ impl Default for Board {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", "  1  2  3  4  5  6  7   ".blue())?;
         for i in 0..42 {
             if i % 7 == 0 {
                 write!(f, "{}", "|".blue())?;
